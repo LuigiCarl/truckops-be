@@ -36,12 +36,16 @@ RUN apk add --no-cache \
     freetype-dev \
     icu-dev \
     oniguruma-dev \
+    postgresql-dev \
+    postgresql-client \
     mysql-client
 
 # Configure and compile PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
+        pdo_pgsql \
+        pgsql \
         bcmath \
         opcache \
         zip \
