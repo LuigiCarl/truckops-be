@@ -19,4 +19,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if (
+                $e instanceof \Illuminate\Validation\ValidationException ||
+                $e instanceof \Illuminate\Auth\AuthenticationException ||
+                $e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+            ) {
+                return null;
+            }
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'error' => $e->getMessage(),
+                    'class' => get_class($e),
+                ], 500);
+            }
+        });
     })->create();

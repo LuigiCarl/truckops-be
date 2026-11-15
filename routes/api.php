@@ -13,6 +13,47 @@ use App\Http\Controllers\Api\V1\TruckController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
+    // Health & Auto-Migrate over HTTP
+    Route::get('/health-db', function () {
+        try {
+            $driver = \Illuminate\Support\Facades\DB::getDriverName();
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+            $tables = \Illuminate\Support\Facades\DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+            return response()->json([
+                'status' => 'connected',
+                'driver' => $driver,
+                'tables_count' => count($tables),
+                'tables' => array_column($tables, 'table_name'),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => $e->getMessage(),
+                'class' => get_class($e),
+            ], 500);
+        }
+    });
+
+    Route::get('/migrate-now', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+            $seedOutput = \Illuminate\Support\Facades\Artisan::output();
+            return response()->json([
+                'status' => 'success',
+                'migrate' => $migrateOutput,
+                'seed' => $seedOutput,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => $e->getMessage(),
+                'class' => get_class($e),
+            ], 500);
+        }
+    });
+
     // Auth
     Route::post('/auth/login', [AuthController::class, 'login']);
 
