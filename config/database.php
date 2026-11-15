@@ -86,8 +86,12 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', env('Shared_pooler', env('host', '127.0.0.1'))),
+            'url' => (str_starts_with((string) env('Shared_pooler', ''), 'postgres'))
+                ? env('Shared_pooler')
+                : env('DATABASE_URL', env('DB_URL')),
+            'host' => (str_starts_with((string) env('Shared_pooler', ''), 'postgres'))
+                ? '127.0.0.1'
+                : env('DB_HOST', env('Shared_pooler', env('host', '127.0.0.1'))),
             'port' => env('DB_PORT', env('port', '5432')),
             'database' => env('DB_DATABASE', env('db', 'postgres')),
             'username' => env('DB_USERNAME', env('user', 'postgres')),
