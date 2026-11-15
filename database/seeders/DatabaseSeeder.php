@@ -28,12 +28,20 @@ class DatabaseSeeder extends Seeder
         $monthStart = Carbon::now()->startOfMonth();
         $expiringSoonDate = Carbon::now()->addDays(18)->toDateString();
 
-        // Single Operator Admin account
+        // Operator accounts
         User::query()->updateOrCreate(
             ['email' => 'admin@truckops.local'],
             [
                 'name' => 'Operator Admin',
                 'password' => 'password',
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'operator@truckops.ph'],
+            [
+                'name' => 'TruckOps Operator',
+                'password' => 'Password123!',
             ]
         );
 
