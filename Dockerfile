@@ -11,14 +11,13 @@ RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
-    --ignore-platform-reqs \
     --optimize-autoloader \
     --no-scripts
 
 # ==============================================================================
-# Stage 2: Production Application Runtime (PHP 8.3 FPM + Nginx + Supervisord)
+# Stage 2: Production Application Runtime (PHP 8.4 FPM + Nginx + Supervisord)
 # ==============================================================================
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Set system metadata
 LABEL maintainer="TruckOps Logistics"
@@ -70,15 +69,16 @@ COPY --from=vendor /app/vendor /var/www/html/vendor
 COPY . /var/www/html
 
 # Copy Docker service configurations
-COPY docker/nginx.conf.template /etc/nginx/conf.d/default.conf.template
+COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Fix line endings, permissions, and runtime directory structure
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
-    && mkdir -p /var/log/supervisor /run/nginx /etc/supervisor/conf.d \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && rm -rf /etc/nginx/http.d/* /etc/nginx/conf.d/* \
+    && mkdir -p /var/log/supervisor /var/log/nginx /run/nginx /etc/supervisor/conf.d \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/log/nginx /run/nginx \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Dynamic port binding (Render default: 10000)
