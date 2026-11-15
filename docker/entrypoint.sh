@@ -44,16 +44,12 @@ else
 fi
 
 # 7. Automated database migrations
-if [ "${RUN_MIGRATIONS}" = "true" ] || [ "${AUTO_MIGRATE}" = "true" ]; then
-    echo "==> [TruckOps] Running database migrations..."
-    php artisan migrate --force --no-interaction
-fi
+echo "==> [TruckOps] Running database migrations..."
+php artisan migrate --force --no-interaction || true
 
-# 8. Optional database seeding (e.g. for initial deployment)
-if [ "${SEED_DATABASE}" = "true" ]; then
-    echo "==> [TruckOps] Seeding initial database records..."
-    php artisan db:seed --force --no-interaction
-fi
+# 8. Automated database seeders
+echo "==> [TruckOps] Seeding database records..."
+php artisan db:seed --force --no-interaction || true
 
 echo "==> [TruckOps] Starting Supervisord (PHP-FPM & Nginx)..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
